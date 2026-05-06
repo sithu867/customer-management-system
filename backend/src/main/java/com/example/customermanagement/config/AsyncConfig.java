@@ -14,6 +14,7 @@ public class AsyncConfig {
     @Bean(name = "bulkImportTaskExecutor")
     public Executor bulkImportTaskExecutor(@Value("${app.bulk-import.worker-count:2}") int workerCount,
                                            @Value("${app.bulk-import.queue-capacity:10}") int queueCapacity) {
+        // Factory pattern: this method creates and configures the Executor bean for Spring.
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setThreadNamePrefix("bulk-import-");
         executor.setCorePoolSize(workerCount);

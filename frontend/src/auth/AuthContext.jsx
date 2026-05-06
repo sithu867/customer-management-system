@@ -1,5 +1,6 @@
 import { createContext, useContext, useMemo, useState } from "react";
 
+// Provider pattern: this context holds auth data that many components can share.
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
@@ -32,9 +33,11 @@ export function AuthProvider({ children }) {
     [user]
   );
 
+  // AuthContext.Provider makes user, login, and logout available to child components.
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
+  // Custom hook: components call useAuth() instead of using AuthContext directly.
   return useContext(AuthContext);
 }

@@ -4,7 +4,6 @@ C:\projects\customer-management-system\customer-management-system\backend\src\ma
 C:\projects\customer-management-system\customer-management-system\backend\src\main\java\com\example\customermanagement\dto\CustomerResponse.java
 C:\projects\customer-management-system\customer-management-system\backend\src\main\java\com\example\customermanagement\config\WebConfig.java
 C:\projects\customer-management-system\customer-management-system\backend\src\main\java\com\example\customermanagement\entity\Country.java
-C:\projects\customer-management-system\customer-management-system\backend\src\main\java\com\example\customermanagement\service\ResourceNotFoundException.java
 C:\projects\customer-management-system\customer-management-system\backend\src\main\java\com\example\customermanagement\dto\CustomerAddressRequest.java
 C:\projects\customer-management-system\customer-management-system\backend\src\main\java\com\example\customermanagement\controller\CustomerController.java
 C:\projects\customer-management-system\customer-management-system\backend\src\main\java\com\example\customermanagement\dto\BulkImportResponse.java
@@ -28,7 +27,6 @@ C:\projects\customer-management-system\customer-management-system\backend\src\ma
 C:\projects\customer-management-system\customer-management-system\backend\src\main\java\com\example\customermanagement\exception\ResourceNotFoundException.java
 C:\projects\customer-management-system\customer-management-system\backend\src\main\java\com\example\customermanagement\service\BulkCustomerImportService.java
 C:\projects\customer-management-system\customer-management-system\backend\src\main\java\com\example\customermanagement\dto\CustomerRequest.java
-C:\projects\customer-management-system\customer-management-system\backend\src\main\java\com\example\customermanagement\controller\ApiExceptionHandler.java
 C:\projects\customer-management-system\customer-management-system\backend\src\main\java\com\example\customermanagement\repository\CustomerAddressRepository.java
 C:\projects\customer-management-system\customer-management-system\backend\src\main\java\com\example\customermanagement\entity\CustomerMobile.java
 C:\projects\customer-management-system\customer-management-system\backend\src\main\java\com\example\customermanagement\exception\ApiExceptionHandler.java

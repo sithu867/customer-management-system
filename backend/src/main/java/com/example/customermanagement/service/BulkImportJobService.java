@@ -13,6 +13,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,10 +23,13 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class BulkImportJobService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(BulkImportJobService.class);
+
     private final BulkCustomerImportService bulkCustomerImportService;
     private final Executor bulkImportTaskExecutor;
     private final Map<String, BulkImportJobState> jobs = new ConcurrentHashMap<>();
 
+    // Stores uploads as short-lived background jobs so large Excel files do not block the request.
     public BulkImportJobService(BulkCustomerImportService bulkCustomerImportService,
                                 @Qualifier("bulkImportTaskExecutor") Executor bulkImportTaskExecutor) {
         this.bulkCustomerImportService = bulkCustomerImportService;
@@ -38,7 +44,15 @@ public class BulkImportJobService {
         BulkImportJobState jobState = BulkImportJobState.queued(jobId, mode, file.getOriginalFilename(), tempFile);
         jobs.put(jobId, jobState);
 
-        bulkImportTaskExecutor.execute(() -> processJob(jobState));
+        try {
+            // The actual import runs on the configured worker thread pool.
+            bulkImportTaskExecutor.execute(() -> processJob(jobState));
+        } catch (RejectedExecutionException ex) {
+            jobs.remove(jobId);
+            deleteTempFile(tempFile);
+            throw new IllegalStateException("Bulk import queue is full. Please try again shortly.", ex);
+        }
+
         return jobState.toResponse();
     }
 
@@ -51,6 +65,7 @@ public class BulkImportJobService {
     }
 
     private void processJob(BulkImportJobState jobState) {
+        // Keep the job status updated so the frontend can poll progress.
         jobState.markProcessing();
         try {
             BulkImportResponse result = bulkCustomerImportService.importCustomers(
@@ -67,6 +82,7 @@ public class BulkImportJobService {
 
     private Path persistUpload(String jobId, MultipartFile file) {
         try {
+            // Multipart files can disappear after the request, so copy them before background work starts.
             Path tempFile = Files.createTempFile("customer-import-" + jobId + "-", ".xlsx");
             file.transferTo(tempFile.toFile());
             return tempFile;
@@ -82,11 +98,12 @@ public class BulkImportJobService {
         try {
             Files.deleteIfExists(tempFile);
         } catch (IOException ex) {
-            // Best-effort cleanup. Keeping the job result is more important than surfacing temp file errors.
+            LOGGER.warn("Failed to delete temporary bulk import file: {}", tempFile, ex);
         }
     }
 
     private static final class BulkImportJobState {
+        // One object holds everything the frontend needs to know about an import job.
         private final String jobId;
         private final BulkImportMode mode;
         private final String originalFilename;

@@ -11,10 +11,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @EnableAsync
 public class AsyncConfig {
 
+    // Dedicated worker pool for bulk imports, separate from normal web requests.
     @Bean(name = "bulkImportTaskExecutor")
     public Executor bulkImportTaskExecutor(@Value("${app.bulk-import.worker-count:2}") int workerCount,
                                            @Value("${app.bulk-import.queue-capacity:10}") int queueCapacity) {
-        // Factory pattern: this method creates and configures the Executor bean for Spring.
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setThreadNamePrefix("bulk-import-");
         executor.setCorePoolSize(workerCount);

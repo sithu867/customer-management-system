@@ -246,6 +246,7 @@ public class BulkCustomerImportService {
 
         @Override
         public void headerFooter(String text, boolean isHeader, String tagName) {
+            // Header and footer content is irrelevant for customer row imports.
         }
 
         private void mapHeaders() {

@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class CustomerService {
 
+    // Main business service for customer CRUD and lookup data.
     private final CustomerRepository customerRepository;
     private final CountryRepository countryRepository;
     private final CityRepository cityRepository;
@@ -118,22 +119,29 @@ public class CustomerService {
     }
 
     private void updateCustomerFields(Customer customer, CustomerRequest request) {
+        // Accept missing lists as empty so partial requests do not crash the service.
+        List<CustomerAddressRequest> addressRequests = listOrEmpty(request.getAddresses());
+        List<String> mobileNumbers = listOrEmpty(request.getMobileNumbers());
+        List<Long> familyMemberIds = listOrEmpty(request.getFamilyMemberIds());
+
         customer.setName(request.getName());
         customer.setDateOfBirth(request.getDateOfBirth());
         customer.setNic(request.getNic());
 
-        Map<Long, City> citiesById = mapCitiesById(cityRepository.findAllById(extractIds(request.getAddresses()
+        // Load referenced records once, then reuse them while rebuilding child collections.
+        Map<Long, City> citiesById = mapCitiesById(cityRepository.findAllById(extractIds(addressRequests
                 .stream()
                 .map(CustomerAddressRequest::getCityId)
                 .collect(Collectors.toList()))));
-        Map<Long, Country> countriesById = mapCountriesById(countryRepository.findAllById(extractIds(request.getAddresses()
+        Map<Long, Country> countriesById = mapCountriesById(countryRepository.findAllById(extractIds(addressRequests
                 .stream()
                 .map(CustomerAddressRequest::getCountryId)
                 .collect(Collectors.toList()))));
-        Map<Long, Customer> familyMembersById = mapCustomersById(customerRepository.findAllById(extractIds(request.getFamilyMemberIds())));
+        Map<Long, Customer> familyMembersById = mapCustomersById(customerRepository.findAllById(extractIds(familyMemberIds)));
 
         customer.getMobiles().clear();
-        for (String mobileNumber : request.getMobileNumbers()) {
+        // Rebuild child rows so create and update follow the same path.
+        for (String mobileNumber : mobileNumbers) {
             CustomerMobile mobile = new CustomerMobile();
             mobile.setCustomer(customer);
             mobile.setMobileNumber(mobileNumber);
@@ -141,7 +149,7 @@ public class CustomerService {
         }
 
         customer.getAddresses().clear();
-        for (CustomerAddressRequest addressRequest : request.getAddresses()) {
+        for (CustomerAddressRequest addressRequest : addressRequests) {
             CustomerAddress address = new CustomerAddress();
             address.setCustomer(customer);
             address.setAddressLine1(addressRequest.getAddressLine1());
@@ -152,7 +160,7 @@ public class CustomerService {
         }
 
         customer.getFamilyMembers().clear();
-        for (Long familyMemberId : new LinkedHashSet<>(request.getFamilyMemberIds())) {
+        for (Long familyMemberId : new LinkedHashSet<>(familyMemberIds)) {
             if (Objects.equals(customer.getId(), familyMemberId)) {
                 continue;
             }
@@ -162,6 +170,10 @@ public class CustomerService {
             familyMember.setFamilyMemberCustomer(resolveEntity("Customer", familyMemberId, familyMembersById));
             customer.getFamilyMembers().add(familyMember);
         }
+    }
+
+    private static <T> List<T> listOrEmpty(List<T> values) {
+        return values == null ? Collections.emptyList() : values;
     }
 
     private <T> T resolveEntity(String label, Long id, Map<Long, T> entitiesById) {
@@ -210,6 +222,7 @@ public class CustomerService {
     }
 
     private CustomerResponse mapCustomer(Customer customer) {
+        // Convert database entities into safe DTOs for the API response.
         return CustomerResponse.builder()
                 .id(customer.getId())
                 .name(customer.getName())

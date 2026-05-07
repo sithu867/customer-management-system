@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 
+// Shared page frame: sidebar, user area, and page header.
 export function AppShell({ title, subtitle, actions, children }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ export function AppShell({ title, subtitle, actions, children }) {
   return (
     <div className="app-shell">
       <aside className="sidebar">
+        {/* Left navigation stays the same while pages change inside the main content area. */}
         <div className="brand-card">
           <p className="eyebrow">Orbit Desk</p>
           <h1>Customer Hub</h1>
@@ -47,6 +49,7 @@ export function AppShell({ title, subtitle, actions, children }) {
 
       <main className="content">
         <header className="topbar">
+          {/* Each page supplies its own title, subtitle, and action buttons. */}
           <div>
             <p className="page-tag">Operations Console</p>
             <h2>{title}</h2>

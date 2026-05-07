@@ -71,6 +71,7 @@ public class CustomerService {
         return getCustomerById(savedCustomer.getId());
     }
 
+    @SuppressWarnings("null")
     public CustomerResponse updateCustomer(Long id, CustomerRequest request) {
         Customer customer = customerRepository.findDetailedById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found for id " + id));
@@ -84,6 +85,7 @@ public class CustomerService {
         return getCustomerById(savedCustomer.getId());
     }
 
+    @SuppressWarnings("null")
     public void deleteCustomer(Long id) {
         if (!customerRepository.existsById(id)) {
             throw new ResourceNotFoundException("Customer not found for id " + id);
@@ -118,6 +120,7 @@ public class CustomerService {
                 .collect(Collectors.toList());
     }
 
+    @SuppressWarnings("null")
     private void updateCustomerFields(Customer customer, CustomerRequest request) {
         // Accept missing lists as empty so partial requests do not crash the service.
         List<CustomerAddressRequest> addressRequests = listOrEmpty(request.getAddresses());

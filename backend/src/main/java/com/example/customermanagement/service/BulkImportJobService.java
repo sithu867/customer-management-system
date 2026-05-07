@@ -80,6 +80,7 @@ public class BulkImportJobService {
         }
     }
 
+    @SuppressWarnings("null")
     private Path persistUpload(String jobId, MultipartFile file) {
         try {
             // Multipart files can disappear after the request, so copy them before background work starts.

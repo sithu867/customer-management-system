@@ -16,6 +16,7 @@ import com.example.customermanagement.entity.CustomerMobile;
 import com.example.customermanagement.exception.ResourceNotFoundException;
 import com.example.customermanagement.repository.CityRepository;
 import com.example.customermanagement.repository.CountryRepository;
+import com.example.customermanagement.repository.CustomerFamilyMemberRepository;
 import com.example.customermanagement.repository.CustomerRepository;
 import java.util.Collection;
 import java.util.Collections;
@@ -36,13 +37,16 @@ public class CustomerService {
     private final CustomerRepository customerRepository;
     private final CountryRepository countryRepository;
     private final CityRepository cityRepository;
+    private final CustomerFamilyMemberRepository customerFamilyMemberRepository;
 
     public CustomerService(CustomerRepository customerRepository,
                            CountryRepository countryRepository,
-                           CityRepository cityRepository) {
+                           CityRepository cityRepository,
+                           CustomerFamilyMemberRepository customerFamilyMemberRepository) {
         this.customerRepository = customerRepository;
         this.countryRepository = countryRepository;
         this.cityRepository = cityRepository;
+        this.customerFamilyMemberRepository = customerFamilyMemberRepository;
     }
 
     @Transactional(readOnly = true)
@@ -90,6 +94,7 @@ public class CustomerService {
         if (!customerRepository.existsById(id)) {
             throw new ResourceNotFoundException("Customer not found for id " + id);
         }
+        customerFamilyMemberRepository.deleteLinksForCustomer(id);
         customerRepository.deleteById(id);
     }
 
